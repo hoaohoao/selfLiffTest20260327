@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LIFF to GAS API</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f4f4; }
+    button { width: 80%; padding: 15px; margin: 10px; font-size: 18px; cursor: pointer; border-radius: 8px; border: none; color: white; }
+    .btn-a { background-color: #00B900; }
+    .btn-b { background-color: #007BFF; }
+    #status { margin: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="status">正在載入系統...</div>
+  <button class="btn-a" onclick="handleAction('按鈕 A')">送出 A 資料</button>
+  <button class="btn-b" onclick="handleAction('按鈕 B')">送出 B 資料</button>
+
+  <script>
+    const LIFF_ID = '2009617105-OfjW8ip2'; // 替換為你的 LIFF ID
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbznx1I7a0rsZ1kJ_6i9vbp2nX7xO4HwEvQMbY7thlz7CiLX3xGZ4D2EeLr4K57CjLzLCQ/exec'; // 替換為上面第 1 步的 URL
+
+    async function initLiff() {
+      const statusTag = document.getElementById('status');
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          statusTag.innerText = "系統就緒 (已登入)";
+          statusTag.style.color = "green";
+        }
+      } catch (err) {
+        statusTag.innerText = "初始化失敗: " + err.message;
+      }
+    }
+
+    async function handleAction(actionName) {
+      const statusTag = document.getElementById('status');
+      statusTag.innerText = "傳送中...";
+
+      try {
+        const profile = await liff.getProfile();
+        const payload = {
+          userId: profile.userId,
+          displayName: profile.displayName,
+          action: actionName
+        };
+
+        // 使用 fetch 發送 POST 請求到 GAS
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.result === "success") {
+          alert("寫入成功！");
+          statusTag.innerText = "已完成寫入";
+          liff.closeWindow();
+        } else {
+          throw new Error(result.message);
+        }
+
+      } catch (err) {
+        alert("傳送失敗: " + err.message);
+        statusTag.innerText = "傳送發生錯誤";
+      }
+    }
+
+    window.onload = initLiff;
+  </script>
+</body>
+</html>
