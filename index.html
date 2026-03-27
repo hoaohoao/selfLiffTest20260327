@@ -15,8 +15,8 @@
 </head>
 <body>
   <div id="status">正在載入系統...</div>
-  <button class="btn-a" onclick="handleAction('按鈕 A')">送出 A 資料</button>
-  <button class="btn-b" onclick="handleAction('按鈕 B')">送出 B 資料</button>
+  <button class="btn-a" onclick="handleAction('上班')">上班</button>
+  <button class="btn-b" onclick="handleAction('下班')">下班</button>
 
   <script>
     const LIFF_ID = '2009617105-OfjW8ip2'; // 替換為你的 LIFF ID
@@ -37,37 +37,62 @@
       }
     }
 
-    async function handleAction(actionName) {
-      const statusTag = document.getElementById('status');
-      statusTag.innerText = "傳送中...";
+    // 取得地理位置的輔助函式
+    function getPosition() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+        reject(new Error("您的瀏覽器不支援地理位置功能"));
+        }
+        navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy
+        }),
+        (err) => reject(new Error("無法取得位置: " + err.message)),
+        { enableHighAccuracy: true, timeout: 5000 }
+        );
+    });
+    }
 
-      try {
-        const profile = await liff.getProfile();
+    async function handleAction(actionName) {
+    const statusTag = document.getElementById('status');
+    statusTag.innerText = "正在取得位置與資料...";
+
+    try {
+        // 1. 同時啟動 Line Profile 與 地理位置 抓取
+        const [profile, location] = await Promise.all([
+        liff.getProfile(),
+        getPosition().catch(err => ({ lat: "拒絕授權", lng: "拒絕授權" })) // 若使用者拒絕，仍繼續執行
+        ]);
+
         const payload = {
-          userId: profile.userId,
-          displayName: profile.displayName,
-          action: actionName
+        userId: profile.userId,
+        displayName: profile.displayName,
+        action: actionName,
+        lat: location.lat,
+        lng: location.lng
         };
 
-        // 使用 fetch 發送 POST 請求到 GAS
+        // 2. 傳送到 GAS
+        statusTag.innerText = "正在寫入試算表...";
         const response = await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
+        method: 'POST',
+        body: JSON.stringify(payload)
         });
 
         const result = await response.json();
         if (result.result === "success") {
-          alert("寫入成功！");
-          statusTag.innerText = "已完成寫入";
-          liff.closeWindow();
+        alert("寫入成功！位置：" + payload.lat + ", " + payload.lng);
+        liff.closeWindow();
         } else {
-          throw new Error(result.message);
+        throw new Error(result.message);
         }
 
-      } catch (err) {
-        alert("傳送失敗: " + err.message);
-        statusTag.innerText = "傳送發生錯誤";
-      }
+    } catch (err) {
+        alert("發生錯誤: " + err.message);
+        statusTag.innerText = "傳送失敗";
+    }
     }
 
     window.onload = initLiff;
