@@ -68,7 +68,7 @@
             const statusTag = document.getElementById('status');
             const distTag = document.getElementById('dist-display');
             
-            distTag.innerText = `目前距離中心點：${dist} 公尺`;
+            distTag.innerText = `目前距離：${dist} 公尺`;
 
             // 始終啟用按鈕，僅做文字提示
             document.getElementById('btn-a').disabled = false;
@@ -109,13 +109,27 @@
           const result = await response.json();
           
           if (result.result === "success") {
-            alert(actionName + " 成功！");
+            sendReportToChat(profile.displayName,actionName ,getDistance(pos.coords.latitude, pos.coords.longitude, TARGET_LAT, TARGET_LNG));
             liff.closeWindow();
           }
         });
       } catch (err) {
         alert("錯誤: " + err.message);
       }
+    }
+
+    async function sendReportToChat(displayName,actionName, distance) {
+        try {
+            await liff.sendMessages([
+            {
+                type: 'text',
+                text: `【系統回報】\n姓名：${displayName}\n動作：${actionName}\n狀態：已完成回傳\n距離：${distance}m`
+            }
+            ]);
+            liff.closeWindow();
+        } catch (err) {
+            console.error("發送訊息失敗", err);
+        }
     }
 
     window.onload = initLiff;
