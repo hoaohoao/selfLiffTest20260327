@@ -130,8 +130,13 @@
         const result = await response.json();
         
         if (result.result === "success") {
-            sendReportToChat(profile.displayName,actionName ,getDistance(u_lat, u_lng, TARGET_LAT, TARGET_LNG));
-            liff.closeWindow();
+            if (liff.isInClient()) {
+                sendReportToChat(profile.displayName,actionName ,getDistance(u_lat, u_lng, TARGET_LAT, TARGET_LNG));
+                liff.closeWindow();
+            }else{
+                statusTag.innerText = "✅ 已傳送打卡資料";
+            }
+            
         }
 
 
