@@ -58,7 +58,7 @@
       }
     }
 
-    let u_lat,u_lng;
+    let u_lat,u_lng,u_distance;
     // 修改 checkLocationAndEnableButtons 邏輯
     function checkLocationAndEnableButtons() {
         navigator.geolocation.getCurrentPosition((pos) => {
@@ -71,6 +71,7 @@
 
             u_lat = userLat;
             u_lng = userLng;
+            u_distance = dist;
             
             distTag.innerText = `目前距離：${dist} 公尺`;
 
@@ -131,7 +132,7 @@
         
         if (result.result === "success") {
             if (liff.isInClient()) {
-                sendReportToChat(profile.displayName,actionName ,getDistance(u_lat, u_lng, TARGET_LAT, TARGET_LNG));
+                sendReportToChat(profile.displayName,actionName ,u_distance);
                 liff.closeWindow();
             }else{
                 statusTag.innerText = "✅ 已傳送打卡資料";
