@@ -25,6 +25,8 @@
     <button id="btn-b" style="background-color: #007BFF;" onclick="handleAction('下班簽退')" disabled>下班簽退</button>
   </div>
 
+  <div id="history-display"></div>
+
   <script>
     const LIFF_ID = '2009617105-OfjW8ip2'; 
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbznx1I7a0rsZ1kJ_6i9vbp2nX7xO4HwEvQMbY7thlz7CiLX3xGZ4D2EeLr4K57CjLzLCQ/exec'; 
@@ -72,9 +74,18 @@
         const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
         
-        if (result.data.length > 0)
-        {
-          alert(result.data.length);
+        
+        if (result.result === "success") {
+          const historyTag = document.getElementById('history-display');
+          
+          if (result.data.length > 0) {
+            // 轉化為字串
+            historyTag.innerText = result.data
+              .map(row => `🕒 ${row.ts} | ${row.act}`)
+              .join('\n');
+          } else {
+            historyTag.innerText = "暫無簽到紀錄";
+          }
         }
         
       } catch (err) {
