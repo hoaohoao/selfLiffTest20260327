@@ -72,6 +72,11 @@
         const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
         
+        if (resultAry.length > 0)
+        {
+          alert(resultAry.length);
+        }
+        
       } catch (error) {
         console.error("要求資料失敗", err);
       }
