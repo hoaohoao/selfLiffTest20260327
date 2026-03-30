@@ -101,25 +101,9 @@
       try {
         const profile = await liff.getProfile();
         
-        // 為了保險，傳送前再次抓取最新位置
-/*         navigator.geolocation.getCurrentPosition(async (pos) => {
-          const payload = {
-            userId: profile.userId,
-            displayName: profile.displayName,
-            action: actionName,
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
 
-          const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-          const result = await response.json();
-          
-          if (result.result === "success") {
-            sendReportToChat(profile.displayName,actionName ,getDistance(pos.coords.latitude, pos.coords.longitude, TARGET_LAT, TARGET_LNG));
-            liff.closeWindow();
-          }
-        }); */
         const payload = {
+            ask_type: "record",
             userId: profile.userId,
             displayName: profile.displayName,
             action: actionName,
