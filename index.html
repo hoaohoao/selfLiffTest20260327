@@ -13,9 +13,31 @@
     .btn-submit:disabled { background-color: #ccc; cursor: not-allowed; }
     #status { margin: 15px; font-weight: bold; color: #666; }
     .dist-info { font-size: 14px; color: #888; margin-top: 5px; }
+    .top-right-btn {
+        /* 關鍵屬性 */
+        position: fixed; 
+        top: 20px;    /* 距離頂部 20px */
+        right: 25px;  /* 距離右側 20px */
+        width: 80px;
+        height: 35px;
+        /* 美化樣式 */
+        padding: 1px 10px;
+        background-color: #ffd500;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 9999; /* 確保按鈕在最上層，不會被其他元素遮住 */
+    }
+
+    .top-right-btn:hover {
+        background-color: #b34500;
+    }
   </style>
 </head>
 <body>
+  <button class="top-right-btn" id="btnGetLocation" onclick="checkLocationAndEnableButtons();">定位</button>
   <div class="card">
     <h2>廠區資訊回報</h2>
     <div id="status">正在確認您的位置...</div>
@@ -45,6 +67,11 @@
                 Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return Math.round(R * c);
+    }
+
+
+    function reloadLocationFromBtn(){
+
     }
 
     async function initLiff() {
@@ -96,6 +123,7 @@
     let u_lat,u_lng,u_distance;
     // 修改 checkLocationAndEnableButtons 邏輯
     function checkLocationAndEnableButtons() {
+        document.getElementById('btnGetLocation').disabled = true;
         navigator.geolocation.getCurrentPosition((pos) => {
             const userLat = pos.coords.latitude;
             const userLng = pos.coords.longitude;
@@ -114,6 +142,8 @@
             document.getElementById('btn-a').disabled = false;
             document.getElementById('btn-b').disabled = false;
 
+            document.getElementById('btnGetLocation').disabled = false;
+
             if (dist <= ALLOWED_DISTANCE) {
             statusTag.innerText = "✅ 已在廠區範圍內";
             statusTag.style.color = "green";
@@ -126,6 +156,7 @@
             document.getElementById('status').innerText = "定位失敗，將以無座標狀態傳送";
             document.getElementById('btn-a').disabled = false;
             document.getElementById('btn-b').disabled = false;
+            document.getElementById('btnGetLocation').disabled = false;
         });
     }
 
